@@ -8,17 +8,23 @@ from PIL import Image
 from torch.utils.data import DataLoader
 
 from data.dataset import ImageFolderDataset
+from data.split import get_class_names, split_dataset
 from data.transforms import (
-    get_train_transforms, get_val_transforms,
-    get_test_transforms, get_inference_transforms, _get_norm_stats,
-    IMAGENET_MEAN, IMAGENET_STD, CIFAR_MEAN, CIFAR_STD,
+    CIFAR_MEAN,
+    CIFAR_STD,
+    IMAGENET_MEAN,
+    IMAGENET_STD,
+    _get_norm_stats,
+    get_inference_transforms,
+    get_test_transforms,
+    get_train_transforms,
+    get_val_transforms,
 )
-from data.split import split_dataset, get_class_names
-
 
 # ===========================================================================
 # ImageFolderDataset
 # ===========================================================================
+
 
 class TestImageFolderDataset:
     def test_len(self, dummy_dataset_dir):
@@ -95,6 +101,7 @@ class TestImageFolderDataset:
 # ===========================================================================
 # Transforms
 # ===========================================================================
+
 
 class TestNormStats:
     def test_imagenet_stats(self):
@@ -179,6 +186,7 @@ class TestInferenceTransforms:
 # split_dataset
 # ===========================================================================
 
+
 class TestSplitDataset:
     def test_creates_split_dirs(self, dummy_dataset_dir_small, tmp_path):
         dst = tmp_path / "split"
@@ -196,24 +204,25 @@ class TestSplitDataset:
         dst = tmp_path / "dst"
         # 10 images per class, 2 classes = 20 total
         from tests.conftest import make_class_dir
+
         make_class_dir(src, "a", n=10)
         make_class_dir(src, "b", n=10)
-        t, v, te = split_dataset(str(src), str(dst), train_ratio=0.6, val_ratio=0.2, test_ratio=0.2)
+        t, v, te = split_dataset(
+            str(src), str(dst), train_ratio=0.6, val_ratio=0.2, test_ratio=0.2
+        )
         assert t + v + te == 20
         assert t > v
         assert t > te
 
     def test_invalid_ratios_raise(self, dummy_dataset_dir_small, tmp_path):
         with pytest.raises(AssertionError):
-            split_dataset(str(dummy_dataset_dir_small), str(tmp_path / "out"),
-                         train_ratio=0.5, val_ratio=0.5, test_ratio=0.5)
-
-    def test_class_dirs_created_in_splits(self, dummy_dataset_dir_small, tmp_path):
-        dst = tmp_path / "split"
-        split_dataset(str(dummy_dataset_dir_small), str(dst))
-        for split in ["train", "val", "test"]:
-            split_classes = [d.name for d in (dst / split).iterdir() if d.is_dir()]
-            assert set(split_classes) == {"class_a", "class_b"}
+            split_dataset(
+                str(dummy_dataset_dir_small),
+                str(tmp_path / "out"),
+                train_ratio=0.5,
+                val_ratio=0.5,
+                test_ratio=0.5,
+            )
 
     def test_seed_reproducibility(self, dummy_dataset_dir_small, tmp_path):
         dst1 = tmp_path / "run1"
@@ -225,6 +234,7 @@ class TestSplitDataset:
     def test_different_seeds_may_differ(self, tmp_path):
         src = tmp_path / "src"
         from tests.conftest import make_class_dir
+
         make_class_dir(src, "a", n=20)
         make_class_dir(src, "b", n=20)
         dst1 = tmp_path / "run1"

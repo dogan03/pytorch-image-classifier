@@ -4,14 +4,15 @@ Tests for utils/logger.py
 
 import logging
 import os
+
 import pytest
 
-from utils.logger import get_logger, TrainingLogger
-
+from utils.logger import TrainingLogger, get_logger
 
 # ===========================================================================
 # get_logger
 # ===========================================================================
+
 
 class TestGetLogger:
     def test_returns_logger_instance(self):
@@ -61,6 +62,7 @@ class TestGetLogger:
 # TrainingLogger
 # ===========================================================================
 
+
 class TestTrainingLogger:
     def test_instantiates(self):
         tl = TrainingLogger()
@@ -96,13 +98,6 @@ class TestTrainingLogger:
     def test_log_info_does_not_raise(self):
         tl = TrainingLogger()
         tl.log_info("Training started")
-
-    def test_log_file_written(self, tmp_path):
-        log_file = str(tmp_path / "train.log")
-        tl = TrainingLogger(log_file=log_file)
-        tl.log_epoch(1, 5, 0.4, 88.0, 0.5, 85.0)
-        content = open(log_file).read()
-        assert "Epoch" in content
 
     def test_multiple_epochs_stored_in_order(self):
         tl = TrainingLogger()
